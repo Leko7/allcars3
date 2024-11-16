@@ -4,7 +4,7 @@
 ```bash
 python get_cars_from_brand.py --brand audi
 ```
-The name of the brand has to be written in lower case, with space as separator if there is multiple words in the brand name.
+The name of the brand has to be written in lower case, with space as separator between brands. If the brand name is composed of multiple words, use '_' as separator.
 
 The output will be under data/cars.jsonl
 
