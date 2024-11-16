@@ -11,3 +11,7 @@ So the process is pretty simple :
 
 I need to have a strategy to crawl step by step. I can't have an internet connection on my PC 24/24.
 --> Write a script that takes one brand as input and then gets the links and the cars.
+
+- let's explore the page with scrapy shell
+
+- Actually, the way the links are written are pretty simple. We may not need a spider to do that.

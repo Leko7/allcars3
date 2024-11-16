@@ -67,3 +67,16 @@ class CarLinkSpider(scrapy.Spider):
 
         if next_page:
             yield response.follow(next_page, self.parse)
+
+class BrandLinksSpider(scrapy.Spider):
+    name = "brandlinks"
+    start_urls = ["https://www.auto-data.net/en/search"]
+
+    def parse(self, response):
+        brand_options = response.css('select[name="brand"] option')
+        brand_dict = {
+            option.css('::text').get().lower().replace('.', '_').replace('-', '_').replace(' ', '_'): option.attrib.get('value')
+            for option in brand_options if option.attrib.get('value')
+        }
+        for brand, value in brand_dict.items():
+            yield {"brand": brand, "value": value}
