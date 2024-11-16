@@ -1,0 +1,10 @@
+Potential works
+
+- Replace strings with numeric values when possible, eventually decoupling (e.g. 'speed' '225 km/h | 139.81 mph' --> 'speed (km/h)' 225, 'speed (mph)' 225)
+-
+
+Issues 
+- Angle columns present 'Â°' character
+- Some colums have 'Log in to see' as value (eg. Engine oil specification, 
+- Check if there are some columns with all entries = nan:  'Electric motor 1' and 'Electric motor 2'
+- 
