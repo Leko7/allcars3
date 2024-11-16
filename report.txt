@@ -1,0 +1,13 @@
+now see what happens if we try to get the links with two initial pages.
+
+some variables have value "login to see". Let's investigate that. We need to login. Don't see what we can do about that (we will not make the robot login?).
+
+So the process is pretty simple :
+
+- get all brand links.
+- put them in a file
+- use carlinks to get all links
+- use cars to get all cars
+
+I need to have a strategy to crawl step by step. I can't have an internet connection on my PC 24/24.
+--> Write a script that takes one brand as input and then gets the links and the cars.
