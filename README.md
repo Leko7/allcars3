@@ -1,11 +1,8 @@
 # Data Acquisition Project for the IASD Master 2
 
-# To crawl the cars from a brand 
+### To crawl the cars from a brand (example : Audi)
 
-## example : Audi
-run : 
-
-python get_cars_from_brand.py --brand audi
+'python get_cars_from_brand.py --brand audi'
 
 The name of the brand has to be written in lower case, with space as separator if there is multiple words in the brand name.
 
