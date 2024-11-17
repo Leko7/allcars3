@@ -19,3 +19,5 @@ I need to have a strategy to crawl step by step. I can't have an internet connec
 - For the electric motor variable, maybe it denotes the presence of an electric motor, or several of them, thus we could turn this info in a variable that counts the number of instances of it in the jsonl
 
 - Important : understand what happens when several variables have the same name in a car page.
+
+- After crawling and grouping columns, we obtain a data set of shape (24166,209)
