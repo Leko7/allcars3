@@ -76,7 +76,7 @@ class CarsSpiderImage(scrapy.Spider):
             car_images = [x.replace('small', 'big') for x in car_images if 'images' in x]
 
             # Extract the car model name from the URL
-            subdir_name = car_data['brand'] + '_' + car_data['model'] + '_' + car_data['generation']
+            subdir_name = car_data['Brand'] + '_' + car_data['Model'] + '_' + car_data['Generation']
 
             car_data['image_path'] = 'temp_images/' + subdir_name
 
