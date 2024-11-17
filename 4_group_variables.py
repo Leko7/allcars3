@@ -1,5 +1,5 @@
 import json
-
+import pandas as pd
 
 if __name__ == "__main__":
 
@@ -23,11 +23,14 @@ if __name__ == "__main__":
                 }
 
     # File paths
-    input_file = "away_abarth_cars.jsonl"
-    output_file = "away_abarth_cars_new.jsonl"
+    input_file = "data/cars.jsonl"
+    output_jsonl_file = "data/cars_filtered.jsonl"
+    output_csv_file = "data/cars_filtered.csv"
+
+    processed_records = []
 
     # Process the JSONL file
-    with open(input_file, "r") as infile, open(output_file, "w") as outfile:
+    with open(input_file, "r") as infile, open(output_jsonl_file, "w") as outfile:
         for line in infile:
             record = json.loads(line.strip())
             updated_record = {}
@@ -39,5 +42,9 @@ if __name__ == "__main__":
                         new_key = replacement
                         break
                 updated_record[new_key] = value
-            # Write the updated record to the output file
+            processed_records.append(updated_record)
             outfile.write(json.dumps(updated_record) + "\n")
+
+    # Save the processed records to CSV
+    df = pd.DataFrame(processed_records)
+    df.to_csv(output_csv_file, index=False)

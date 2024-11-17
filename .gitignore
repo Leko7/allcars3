@@ -1,4 +1,7 @@
 /data/old/
 /data/car_links.jsonl
 /data/cars.jsonl
+/data/crawled_brands.jsonl
+/data/cars_filtered.jsonl
+/data/cars_filtered.csv
 /venv
