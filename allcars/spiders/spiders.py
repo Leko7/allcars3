@@ -40,12 +40,7 @@ class CarsSpider(scrapy.Spider):
 
 class CarLinkSpider(scrapy.Spider):
     name = "carlinks"
-    # start_urls = [
-    #     "https://www.auto-data.net/en/results?brand=41&model=0&power1=0&power2=0&page=1"  # Audi
-    #     "https://www.auto-data.net/en/results?brand=301&model=0&power1=&power2=", # Aiways
-    #      "https://www.auto-data.net/en/results?brand=200&model=0&power1=&power2=" # Abarth
-    # ]
-
+    
     def __init__(self, start_url=None, *args, **kwargs):
         super(CarLinkSpider, self).__init__(*args, **kwargs)
         if not start_url:
@@ -80,3 +75,69 @@ class BrandLinksSpider(scrapy.Spider):
         }
         for brand, value in brand_dict.items():
             yield {"brand": brand, "value": value}
+
+class BrandLinksSpider2(scrapy.Spider):
+    name = "brandlinks2"
+    start_urls = ["https://www.auto-data.net/en/allbrands"]
+
+    def parse(self, response):
+        brands = response.css("a.marki_blok")
+        for brand in brands:
+            brand_name = brand.css("strong::text").get()
+            brand_link = response.urljoin(brand.attrib["href"])
+            yield {"brand": brand_name, "link": brand_link}
+
+class FamilyLinksSpider(scrapy.Spider):
+    name = "familinks"
+    
+    def start_requests(self):
+        # Load the links from the JSONL file
+        with open("data/catalog_method/brand_links.jsonl", "r") as f:
+            for line in f:
+                brand_data = json.loads(line)
+                yield scrapy.Request(url=brand_data["link"], callback=self.parse)
+
+    def parse(self, response):
+        for family in response.css('a.modeli'):
+            family_name = family.css('strong::text').get()
+            family_link = response.urljoin(family.css('::attr(href)').get())
+            yield {"family": family_name, "link": family_link}
+
+# class FamilyLinksSpider(scrapy.Spider):
+#     name = "familinks"
+#     start_urls = ["https://www.auto-data.net/en/abarth-brand-200"]
+
+#     def parse(self, response):
+#         for family in response.css('a.modeli'):
+#             family_name = family.css('strong::text').get()
+#             family_link = response.urljoin(family.css('::attr(href)').get())
+#             yield {"family": family_name, "link": family_link}
+
+class GenLinksSpider(scrapy.Spider):
+    name = "genlinks"
+    start_urls = ["https://www.auto-data.net/en/abarth-124-spider-model-2152"]
+
+    def parse(self, response):
+        for generation in response.css('a.position'):
+            gen_name = generation.css('strong.tit::text').get()
+            gen_link = response.urljoin(generation.css('::attr(href)').get())
+            
+            # Ensure that gen_name and gen_link are valid and unique
+            if gen_name and gen_link:
+                yield {
+                    "generation": gen_name.strip(),
+                    "link": gen_link
+                }
+
+class ModelLinksSpider(scrapy.Spider):
+    name = "modelinks"
+    start_urls = ["https://www.auto-data.net/en/abarth-124-gt-generation-6774"]
+
+    def parse(self, response):
+        for model in response.xpath('//a[contains(@title, "Technical Specs")]'):
+            model_name = model.xpath('./strong/span[@class="tit"]/text()').get()
+            model_link = response.urljoin(model.xpath('./@href').get())
+            yield {
+                "model": model_name,
+                "link": model_link
+            }
