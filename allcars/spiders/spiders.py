@@ -1,6 +1,8 @@
 import json
 import scrapy
 
+#### 1 - Search Method
+
 class CarsSpider(scrapy.Spider):
     name = "cars"
     custom_settings = {
@@ -40,12 +42,7 @@ class CarsSpider(scrapy.Spider):
 
 class CarLinkSpider(scrapy.Spider):
     name = "carlinks"
-    # start_urls = [
-    #     "https://www.auto-data.net/en/results?brand=41&model=0&power1=0&power2=0&page=1"  # Audi
-    #     "https://www.auto-data.net/en/results?brand=301&model=0&power1=&power2=", # Aiways
-    #      "https://www.auto-data.net/en/results?brand=200&model=0&power1=&power2=" # Abarth
-    # ]
-
+    
     def __init__(self, start_url=None, *args, **kwargs):
         super(CarLinkSpider, self).__init__(*args, **kwargs)
         if not start_url:
@@ -80,3 +77,127 @@ class BrandLinksSpider(scrapy.Spider):
         }
         for brand, value in brand_dict.items():
             yield {"brand": brand, "value": value}
+
+#### 2 - Catalog Method
+
+class BrandLinksSpider2(scrapy.Spider):
+    name = "brandlinks2"
+    start_urls = ["https://www.auto-data.net/en/allbrands"]
+
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+    }
+
+    def parse(self, response):
+        brands = response.css("a.marki_blok")
+        for brand in brands:
+            brand_name = brand.css("strong::text").get()
+            brand_link = response.urljoin(brand.attrib["href"])
+            yield {"brand": brand_name, "link": brand_link}
+
+class ModelLinksSpider(scrapy.Spider):
+    name = "modelinks"
+
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+    }
+    
+    def start_requests(self):
+        # Load the links from the JSONL file
+        with open("data/catalog_method/brand_links.jsonl", "r") as f:
+            for line in f:
+                brand_data = json.loads(line)
+                yield scrapy.Request(url=brand_data["link"], callback=self.parse)
+
+    def parse(self, response):
+        for model in response.css('a.modeli'):
+            model_name = model.css('strong::text').get()
+            model_link = response.urljoin(model.css('::attr(href)').get())
+            yield {"model": model_name, "link": model_link}
+
+class GenLinksSpider(scrapy.Spider):
+    name = "genlinks"
+
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+    }
+
+    def start_requests(self):
+        # Load the links from the JSONL file
+        with open("data/catalog_method/model_links.jsonl", "r") as f:
+            for line in f:
+                brand_data = json.loads(line)
+                yield scrapy.Request(url=brand_data["link"], callback=self.parse)
+
+    def parse(self, response):
+        for generation in response.css('a.position'):
+            gen_name = generation.css('strong.tit::text').get()
+            gen_link = response.urljoin(generation.css('::attr(href)').get())
+            
+            # Ensure that gen_name and gen_link are valid and unique
+            if gen_name and gen_link:
+                yield {
+                    "generation": gen_name.strip(),
+                    "link": gen_link
+                }
+
+class ModifLinksSpider(scrapy.Spider):
+    name = "modiflinks"
+
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+    }
+
+    def start_requests(self):
+        # Load the links from the JSONL file
+        with open("data/catalog_method/generation_links.jsonl", "r") as f:
+            for line in f:
+                brand_data = json.loads(line)
+                yield scrapy.Request(url=brand_data["link"], callback=self.parse)
+
+    def parse(self, response):
+        for modif in response.xpath('//a[contains(@title, "Technical Specs")]'):
+            modif_name = modif.xpath('./strong/span[@class="tit"]/text()').get()
+            modif_link = response.urljoin(modif.xpath('./@href').get())
+            yield {
+                "modif": modif_name,
+                "link": modif_link
+            }
+
+class CarsSpider2(scrapy.Spider):
+    name = "cars2"
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+    }
+
+    def start_requests(self):
+        # Load URLs from the JSONL file
+        cars_links_path = "data/catalog_method/modification_links.jsonl"
+        with open(cars_links_path, "r") as f:
+            for line in f:
+                data = json.loads(line)
+                url = data.get("link")
+                modif = data.get("modif")
+                if url and modif:
+                    yield scrapy.Request(url=url, callback=self.parse, cb_kwargs={'modif': modif})
+
+    def parse(self, response, modif):
+        car_data = {'Modification': modif}
+        for row in response.css("table tr"):
+            header = row.css("th::text").get()
+            value = row.css("td::text").get()
+            
+            # Check for links or additional text in the <td>
+            if not value:
+                value = row.css("td a::text").get()
+            
+            if value is None:
+                # If still None, try to get entire contents in case of mixed text types
+                value = row.css("td *::text").getall()
+                value = " ".join(value).strip() if value else None
+            
+            # Add header-value pair to the dictionary if header exists
+            if header:
+                car_data[header.strip()] = value.strip() if value else None
+        
+        yield car_data

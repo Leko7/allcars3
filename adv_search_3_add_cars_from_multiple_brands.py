@@ -29,7 +29,7 @@ if __name__ == "__main__":
         # Define the command to crawl a specific brand
         command_links = [
             "python",
-            "2_get_cars_from_brand.py",
+            "adv_search_2_get_cars_from_brand.py",
             f"--brands={brand}"
         ]
 
