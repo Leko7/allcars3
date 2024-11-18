@@ -23,3 +23,7 @@ I need to have a strategy to crawl step by step. I can't have an internet connec
 - After crawling and grouping columns, we obtain a data set of shape (24166,209)
 
 - A good idea : after crawling with the 2 methods, check that you get all the cars from the advanced search method (and more) with the catalog method
+
+Maybe we can just call them "search method" and "catalog method" for the presentation/report
+
+I think the structure of the catalog is Brand >> Model >> Generation >> Modification

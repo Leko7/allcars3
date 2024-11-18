@@ -1,8 +1,8 @@
 /data/old/
-/data/car_links.jsonl
-/data/cars.jsonl
-/data/crawled_brands.jsonl
-/data/cars_filtered.jsonl
-/data/cars_filtered.csv
+/data/search_method/car_links.jsonl
+/data/search_method/cars.jsonl
+/data/search_method/cars_filtered.jsonl
+/data/search_method/cars_filtered.csv
 /venv
 /data/catalog_method/
+/data/search_method/crawled_brands.jsonl
