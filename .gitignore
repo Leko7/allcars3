@@ -6,3 +6,4 @@
 /venv
 /data/catalog_method/
 /data/search_method/crawled_brands.jsonl
+/data/catalog_method_old/

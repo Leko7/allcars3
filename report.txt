@@ -27,3 +27,69 @@ I need to have a strategy to crawl step by step. I can't have an internet connec
 Maybe we can just call them "search method" and "catalog method" for the presentation/report
 
 I think the structure of the catalog is Brand >> Model >> Generation >> Modification
+
+
+I found some modifications that somehow have different images
+
+Technically what probably happened is that one has a more recent update than the other, with more images
+
+Maybe what we could do is, for all modifications, append images to the folder of the generation, only if they are not there already
+
+
+some cars have only images, no data (no modifications)
+https://www.auto-data.net/en/aston-martin-valkyrie-model-2633
+
+We are not crawling their images, but I think it's fine, because we have no info about them
+
+The data set will be more qualitative if all cars have images and infos
+
+After some thinking I think it's better to not care about different images for different modifications
+
+since it is just an anomaly on the website
+
+And it will be confusing for the user of the dataset if only 1% of modifications of the same generation have different images, so it is better to associate images to generations
+
+Try to estimate the time the search method + images will takes
+
+Need to count the number of generations
+
+It should be (n_cars + n_generations*10)*download_delay
+
+assuming 10 images per generation
+
+there is 6078 generations and 24116 cars so it should be ((6078*10) + 24116)*3 = 254688 seconds = 70.7 hours
+
+And that's only with the cars on the catalog method
+
+And I need to also get the links for the 333 brands, 2389 models and 6078 generations, that is (333 + 2389 + 6078)*3/3600 = 7.3 hours
+
+!important ! I need to check that the images paths are present in all cars, even when the folder already exists
+
+with the catalog method, there is 335 brands, 3361 models and 9650 generations 
+
+there is so much cars. it's at least two times the amount of the search method. I have 52718 car links
+
+with a 3 seconds delay, assuming there is 7 images per generation on average, we would need 3 * (52718 + 7*9650)/3600 = 100.2 hours
+
+I think I will use a 1 second delay. then it will be 33 hours
+
+Maybe they can time us out. But 1 second is still considered reasonable. it's like the minimum
+
+the thumb is not written with underscore in this page 
+https://www.auto-data.net/images/f0/thumb7397896.jpg 
+
+as a result it is crawled as a tiny image
+
+is this what you told me about earlier ?
+
+somehow it stopped. Strange.
+
+I'm trying by removing this 
+
+{"modif": "1.4 CRDi (90 Hp)", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-crdi-90hp-23618"}
+{"modif": "1.4 (100 Hp) Automatic", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-100hp-automatic-23641"}
+{"modif": "1.4 (100 Hp)", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-100hp-23631"}
+
+It was not the issue, I solved it by specifying the encoding as utf 8 for opening json files in the cars spider. Strange that this only happens after scraping 20 000 cars.
+
+I had to stop at toyota --> delete cars /images and restart maybe
