@@ -1,5 +1,73 @@
 import json
 import pandas as pd
+import re
+import numpy as np
+import math
+
+def replace_range_with_mean_highthen(value):
+    if isinstance(value, str):
+        return re.sub(
+            r'(\d+(\.\d+)?)(\s*-\s*)(\d+(\.\d+)?)',
+            lambda m: str((float(m.group(1)) + float(m.group(4))) / 2),
+            value
+        )
+    return value
+
+def replace_set_values_with_mean_slash(x):
+    if '/' in str(x):
+        return str(np.mean(list(map(float, x.split('/')))))
+    return x
+
+def clean_double_dots(df, col):
+    df[col] = df[col].str.replace(r'(\d+\.\d+)\.', r'\1', regex=True)
+    return df
+
+def replace_range_with_mean_space(value):
+    if isinstance(value, str):
+        return re.sub(
+            r'(\d+(\.\d+)?)\s+(\d+(\.\d+)?)',
+            lambda m: str((float(m.group(1)) + float(m.group(3))) / 2),
+            value
+        )
+    return value
+
+def convert_kg_by_100km_to_l_by_100km_and_remove_unit(text):
+    return re.sub(r'(\d+(\.\d+)?)\s*kg/100\s*km', lambda m: f"{float(m.group(1)) / 0.74:.2f} ", str(text))
+
+def convert_to_float(obj):
+    import math
+    if obj is not None and not (isinstance(obj, float) and math.isnan(obj)):
+        try:
+            return float(obj)
+        except (ValueError, TypeError):
+            return None
+    return None
+
+
+def clean_multiple_dots(value):
+    if pd.isna(value):  # Check if the value is NaN
+        return value
+    if isinstance(value, str) and value.count('.') > 1:
+        # Find first two segments separated by dots
+        parts = value.split('.')
+        return '.'.join(parts[:2])  # Keep only the first two parts
+    return value
+
+def clean_dot_before_highthen(obj):
+    if obj is not None and not (isinstance(obj, float) and math.isnan(obj)):
+        if isinstance(obj, str):
+            obj = obj.replace('.-', '-')
+    return obj
+
+def remove_hyphen(s):
+    if isinstance(s, str):
+        return s.replace("-", "")
+    return s
+
+def remove_inf(s):
+    if isinstance(s, str):
+        return s.replace("<", "")
+    return s
 
 if __name__ == "__main__":
 
@@ -73,11 +141,14 @@ if __name__ == "__main__":
     # Save the data set in df_original and keep df as the ML-oriented version of the data set
     df_original = df.copy()
 
+    # Drop useless columns to build a machine learning dataset
+    df.drop(columns=[
+            "q_speed" # Bad quality since it contains the speed for some cars and acceleration for others
+    ], inplace=True)
+
     # Remove units in the ML-oriented version of the data set
     df['q_fuel_economy'] = df['q_fuel_economy'].str.replace('l/100 km', '', regex=False)
     df['q_eco'] = df['q_eco'].str.replace('g/km CO', '', regex=False)
-    df['q_speed'] = df['q_speed'].str.replace('km/h', '', regex=False)
-    df['q_speed'] = df['q_speed'].str.replace('mph', '', regex=False)
     df['q_power'] = df['q_power'].str.replace('Hp', '', regex=False)
     df['q_power'] = df['q_power'].str.replace('Nm', '', regex=False)
     df['q_power'] = df['q_power'].str.replace(',', '', regex=False)
@@ -285,7 +356,6 @@ if __name__ == "__main__":
     df['q_power'] = df['q_power'].str.split().str[0]
 
     # Keep only the first value for redundant units
-    df["q_speed"] = df["q_speed"].apply(lambda x: x.split()[0] if isinstance(x, str) else x)
     df["Weight-to-power ratio"] = df["Weight-to-power ratio"].apply(lambda x: x.split()[0] if isinstance(x, str) else x)
     df["Weight-to-torque ratio"] = df["Weight-to-torque ratio"].apply(lambda x: x.split()[0] if isinstance(x, str) else x)
 
@@ -295,6 +365,79 @@ if __name__ == "__main__":
     # Keep only the year in dates
     df['Start of production'] = df['Start of production'].str.split(',').str[-1].str.strip()
     df['End of production'] = df['End of production'].str.split(',').str[-1].str.strip()
+
+    # Average interval values separated by "-" or " - "
+    to_average_cols = [
+        "q_length",
+        "q_width",
+        "q_curb_weight",
+        "Seats",
+        "Doors"#,
+        #"Fuel consumption (economy)"
+        ]
+
+    for col in to_average_cols:
+        df[col] = df[col].apply(replace_range_with_mean_highthen)
+
+    # Average when there are multiple values separated by "/"
+    to_average_cols = [
+        "q_length",
+        "q_width",
+        "q_curb_weight",
+        "Doors"
+        ]
+    for col in to_average_cols:
+        df[col] = df[col].apply(replace_set_values_with_mean_slash)
+
+    col = "q_fuel_economy"
+    df = clean_double_dots(df, col)
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(replace_range_with_mean_space)
+    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
+    df[col] = df[col].apply(convert_to_float)
+
+    col = "Fuel consumption (economy) - urban"
+    df[col] = df[col].apply(clean_dot_before_highthen)
+    df[col] = df[col].apply(clean_multiple_dots)
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(convert_to_float)
+
+    col = "Fuel consumption (economy) - extra urban"
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
+    df[col] = df[col].apply(convert_to_float)
+
+    col = "Fuel consumption (economy) - combined"
+    df[col] = df[col].apply(clean_multiple_dots)
+    df = clean_double_dots(df, col)
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(replace_range_with_mean_space)
+    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
+    df[col] = df[col].apply(convert_to_float)
+
+
+    col = "CO"
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(remove_hyphen)
+    df[col] = df[col].apply(convert_to_float)    
+
+    col = "Acceleration 0 - 100 km/h"
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(clean_multiple_dots)
+    df[col] = df[col].apply(remove_inf)
+    df[col] = df[col].apply(convert_to_float)
+
+    col = "Acceleration 0 - 62 mph"
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(remove_inf)
+    df[col] = df[col].apply(clean_multiple_dots)
+    df[col] = df[col].apply(clean_multiple_dots)
+    df[col] = df[col].apply(convert_to_float)
+
+    col = "Acceleration 0 - 60 mph"
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df[col] = df[col].apply(remove_inf)
+    df[col] = df[col].apply(convert_to_float)
 
     # Save both frames as csv
     df.to_csv(ml_output_csv_file, index=False)

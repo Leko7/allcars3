@@ -132,4 +132,6 @@ Let's build extra column for some cases when there are two infos in a cell. Ex: 
 
  average values when several values of the same unit --> separated by either - or ; (may be risky if we still have ratios)
 
+An important number of columns contain ranges instead of numers.
+
  there are "<" signs in acceleration 0 - 300 km/h. How do we handle these ?
