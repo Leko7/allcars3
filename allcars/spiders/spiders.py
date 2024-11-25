@@ -208,13 +208,19 @@ class CarsSpider2(scrapy.Spider):
         # Check if the folder images_path doesn't exist already
         if not os.path.exists(images_path):
 
-            # list of all images in the page
-            lst = response.css('img::attr(src)').getall()
+            big_images = response.xpath('//*[contains(text(), \"bigs\")]').get()
+            prov = big_images.split(';')
+            prov = [it for it in prov if 'bigs' in it]
+            prov = prov[1:] # in the first element there is the inizialization
+
+            lst = []
+            for s in prov:
+                t = s.split('"')
+                lst.append('/images/' + t[1])
 
             if lst:
                 # list of cars images
-                car_images = [x.replace('_thumb', '') for x in lst if 'images' in x]
-                car_images = [x.replace('small', 'big') for x in car_images if 'images' in x]
+                car_images = lst
 
                 car_data['images_path'] = images_path
 

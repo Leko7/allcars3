@@ -93,3 +93,43 @@ I'm trying by removing this
 It was not the issue, I solved it by specifying the encoding as utf 8 for opening json files in the cars spider. Strange that this only happens after scraping 20 000 cars.
 
 I had to stop at toyota --> delete cars /images and restart maybe
+
+Done with the crawling.
+
+Things to do
+
+--> evaluate if search C catalog
+
+--> data transformation
+    - remove useless columns (too much missing values)
+
+--> data exploration
+    - questions handling with the q_ method
+    some columns like "Electric motor 1,2,3,4" are actually headings without values in the html. It's not clear what they represent so we remove them.
+    - for Fuel consumption (economy) - combined (CNG) : remove the 
+
+
+We have 55 columns about types of fuel consumption. That's a lot.
+
+A lot of columns have missing values. But that doesn't mean that they are useless. They are just very specific (ex : acceleration from 0 to 60 kmh with diesel), Fuel consumption (economy) - urban (Ethanol - E85) (NEDC)...
+
+Here, we have columns with lots of "missing" data, but it's not actually missing, it's just very specific. And the columns are very connected together. Thus, for ML, it might be possible to input them easily, thus we do not remove them.
+For instance, it should be relatively easy to impute the acceleration from 0 to 100 given acceleration from 0 to 60 and 0 to 100.
+
+Or it can be relatively easy to just build a "energy consumption" score, or an "acceleration score".
+
+let's determine all the "units" columns, that is column that can be transformed into one number relevant columns
+
+I removed the "Engine oil specification" column, where all values are "log in to see."
+
+check for the formating of dates
+
+power is more interesting with rpm but not all values have rpm so it's better to remove it. Ideally, one could do some imputation to retrieve it and maybe make another column out of it.
+
+Let's build extra column for some cases when there are two infos in a cell. Ex: power and torque
+
+ Acceleration 0 - 62 mph may be a dupplicate of 0 - 100 mph
+
+ average values when several values of the same unit --> separated by either - or ; (may be risky if we still have ratios)
+
+ there are "<" signs in acceleration 0 - 300 km/h. How do we handle these ?
