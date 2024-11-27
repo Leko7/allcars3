@@ -10,3 +10,13 @@ Issues
 
 Solved Issues
 - Change the name of the image to get the biggest size available (delete '_thumb' and changed 'small' to 'big')
+
+# Storage
+
+- Store images in a database require to encode them in a binary format (BLOB) and then serialized to be stored in a database.
+
+
+
+PRESENTATION
+7 min + 
+support representation ?
