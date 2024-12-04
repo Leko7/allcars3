@@ -19,7 +19,8 @@ def replace_set_values_with_mean_slash(x):
     return x
 
 def clean_double_dots(df, col):
-    df[col] = df[col].str.replace(r'(\d+\.\d+)\.', r'\1', regex=True)
+    if df[col].dtype == 'object':
+        df[col] = df[col].str.replace(r'(\d+\.\d+)\.', r'\1', regex=True)
     return df
 
 def replace_range_with_mean_space(value):
@@ -64,10 +65,27 @@ def remove_hyphen(s):
         return s.replace("-", "")
     return s
 
+def remove_infinity(s):
+    if isinstance(s, str):
+        return s.replace("infinity", "")
+    return s
+
 def remove_inf(s):
     if isinstance(s, str):
         return s.replace("<", "")
     return s
+
+def clean_float_column(df, col):
+    df[col] = df[col].apply(remove_infinity)
+    df[col] = df[col].apply(remove_inf)
+    df[col] = df[col].apply(clean_dot_before_highthen)
+    df[col] = df[col].apply(replace_range_with_mean_highthen)
+    df = clean_double_dots(df, col)
+    df[col] = df[col].apply(clean_multiple_dots)
+    df[col] = df[col].apply(replace_range_with_mean_space)
+    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
+    df[col] = df[col].apply(convert_to_float)
+    return df[col]
 
 if __name__ == "__main__":
 
@@ -389,55 +407,131 @@ if __name__ == "__main__":
     for col in to_average_cols:
         df[col] = df[col].apply(replace_set_values_with_mean_slash)
 
-    col = "q_fuel_economy"
-    df = clean_double_dots(df, col)
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(replace_range_with_mean_space)
-    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
-    df[col] = df[col].apply(convert_to_float)
+    float_cols = [
+        'q_fuel_economy',
+        'Fuel consumption (economy) - urban',
+        'Fuel consumption (economy) - extra urban',
+        'Fuel consumption (economy) - combined',
+        'CO',
+        'Acceleration 0 - 100 km/h',
+        'Acceleration 0 - 62 mph',
+        'Acceleration 0 - 60 mph',
+        'Maximum speed',
+        'Weight-to-torque ratio',
+        'Torque',
+        'Kerb Weight',
+        'Fuel tank capacity',
+        'Length',
+        'Width',
+        'Height',
+        'Wheelbase',
+        'Front track',
+        'Rear (Back) track',
+        'Wheel rims size',
+        'Minimum turning circle (turning diameter)',
+        'q_electric_driving_range',
+        'q_electricity_consumption',
+        'All-electric range (WLTP)',
+        'Average Energy consumption (WLTP)',
+        'Electric motor Torque',
+        'Width including mirrors',
+        'q_gross_weight',
+        'q_trunk_boot_space',
+        'Fuel consumption (economy) - urban (NEDC)',
+        'Fuel consumption (economy) - extra urban (NEDC)',
+        'Fuel consumption (economy) - combined (NEDC)',
+        'Max. weight',
+        'Max load',
+        'Trunk (boot) space - minimum',
+        'Trunk (boot) space - maximum',
+        'Front overhang',
+        'Rear overhang',
+        'Permitted trailer load with brakes (12%)',
+        'Fuel consumption at Low speed (WLTP)',
+        'Fuel consumption at Medium speed (WLTP)',
+        'Fuel consumption at high speed (WLTP)',
+        'Fuel consumption at very high speed (WLTP)',
+        'Combined fuel consumption (WLTP)',
+        'Max. roof load',
+        'Ride height (ground clearance)',
+        'Approach angle',
+        'Departure angle',
+        'Ramp-over (brakeover) angle',
+        'Permitted trailer load without brakes',
+        'Permitted towbar download',
+        'Maximum engine speed',
+        'Drag coefficient (C',
+        'Fuel consumption (economy) - urban (EPA)',
+        'Fuel consumption (economy) - extra urban (EPA)',
+        'Fuel consumption (economy) - combined (EPA)',
+        'Width with mirrors folded',
+        'All-electric range (EPA)',
+        'All-electric range (CLTC)',
+        'All-electric range (WLTC)',
+        'Average Energy consumption (CLTC)',
+        'Fuel consumption (economy) - combined (WLTC)',
+        'Average Energy consumption (WLTC)',
+        'All-electric range',
+        'Average Energy consumption',
+        'Maximum revolutions of the electric motor',
+        '100 km/h - 0',
+        'Fuel consumption (economy) - urban (LPG)',
+        'Fuel consumption (economy) - extra urban (LPG)',
+        'Fuel consumption (economy) - combined (LPG)',
+        'Wading depth',
+        'Acceleration 0 - 200 km/h',
+        'Fuel consumption (economy) - urban (NEDC, WLTP equivalent)',
+        'Fuel consumption (economy) - extra urban (NEDC, WLTP equivalent)',
+        'Fuel consumption (economy) - combined (NEDC, WLTP equivalent)',
+        'Permitted trailer load with brakes (8%)',
+        'All-electric range (NEDC)',
+        'Acceleration 0 - 300 km/h',
+        'Average Energy consumption (NEDC)',
+        'Fuel consumption at Low speed (WLTP) (CNG)',
+        'Fuel consumption at Medium speed (WLTP) (CNG)',
+        'Fuel consumption at high speed (WLTP) (CNG)',
+        'Fuel consumption at very high speed (WLTP) (CNG)',
+        'Combined fuel consumption (WLTP) (CNG)',
+        'Fuel consumption (economy) - urban (CNG) (NEDC)',
+        'Fuel consumption (economy) - extra urban (CNG) (NEDC)',
+        'Fuel consumption (economy) - combined (CNG) (NEDC)',
+        'Fuel consumption (economy) - urban (CNG)',
+        'Fuel consumption (economy) - extra urban (CNG)',
+        'Fuel consumption (economy) - combined (CNG)',
+        'All-electric range (NEDC, WLTP equivalent)',
+        'Average Energy consumption (NEDC, WLTP equivalent)',
+        'Average Energy consumption (EPA)',
+        '200 km/h - 0',
+        'Fuel consumption (economy) - urban (LPG) (NEDC)',
+        'Fuel consumption (economy) - extra urban (LPG) (NEDC)',
+        'Fuel consumption (economy) - combined (LPG) (NEDC)',
+        'Fuel consumption at Medium speed (WLTP) (LPG)',
+        'Fuel consumption at high speed (WLTP) (LPG)',
+        'Fuel consumption at very high speed (WLTP) (LPG)',
+        'Combined fuel consumption (WLTP) (LPG)',
+        'Fuel consumption (economy) - extra urban (LPG) (NEDC, WLTP equivalent)',
+        'Fuel consumption (economy) - urban (WLTC)',
+        'Fuel consumption (economy) - extra urban (WLTC)',
+        'q_power_torque'
+        ]
+    
+    for col in float_cols :
+        df[col] = clean_float_column(df, col)
 
-    col = "Fuel consumption (economy) - urban"
-    df[col] = df[col].apply(clean_dot_before_highthen)
-    df[col] = df[col].apply(clean_multiple_dots)
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(convert_to_float)
+    # Drop columns with 0 values after cleaning
+    df.drop(columns=[
+        "Drivetrain Architecture",
+        "Fuel consumption (economy) - urban (LPG) (NEDC, WLTP equivalent)",
+        "Average Energy consumption (CLTC)",
+        "Fuel consumption (economy) - combined (LPG) (NEDC, WLTP equivalent)",
+        "Fuel consumption (economy) - extra urban (LPG) (NEDC, WLTP equivalent)",
+        "Average Energy consumption (WLTC)",
+        "Fuel consumption (economy) - urban (LPG) (NEDC)",
+        "Fuel consumption (economy) - extra urban (LPG) (NEDC)"     
+    ], inplace=True)
 
-    col = "Fuel consumption (economy) - extra urban"
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
-    df[col] = df[col].apply(convert_to_float)
-
-    col = "Fuel consumption (economy) - combined"
-    df[col] = df[col].apply(clean_multiple_dots)
-    df = clean_double_dots(df, col)
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(replace_range_with_mean_space)
-    df[col] = df[col].apply(convert_kg_by_100km_to_l_by_100km_and_remove_unit)
-    df[col] = df[col].apply(convert_to_float)
-
-
-    col = "CO"
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(remove_hyphen)
-    df[col] = df[col].apply(convert_to_float)    
-
-    col = "Acceleration 0 - 100 km/h"
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(clean_multiple_dots)
-    df[col] = df[col].apply(remove_inf)
-    df[col] = df[col].apply(convert_to_float)
-
-    col = "Acceleration 0 - 62 mph"
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(remove_inf)
-    df[col] = df[col].apply(clean_multiple_dots)
-    df[col] = df[col].apply(clean_multiple_dots)
-    df[col] = df[col].apply(convert_to_float)
-
-    col = "Acceleration 0 - 60 mph"
-    df[col] = df[col].apply(replace_range_with_mean_highthen)
-    df[col] = df[col].apply(remove_inf)
-    df[col] = df[col].apply(convert_to_float)
+    # Add a column to store unique generations (useful to access the images)
+    df['unique_gen'] = df['Brand'] + "/" + df['Model'] + "/" + df['Generation']
 
     # Save both frames as csv
     df.to_csv(ml_output_csv_file, index=False)
