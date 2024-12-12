@@ -1,0 +1,163 @@
+now see what happens if we try to get the links with two initial pages.
+
+some variables have value "login to see". Let's investigate that. We need to login. Don't see what we can do about that (we will not make the robot login?).
+
+So the process is pretty simple :
+
+- get all brand links.
+- put them in a file
+- use carlinks to get all links
+- use cars to get all cars
+
+I need to have a strategy to crawl step by step. I can't have an internet connection on my PC 24/24.
+--> Write a script that takes one brand as input and then gets the links and the cars.
+
+- let's explore the page with scrapy shell
+
+- Actually, the way the links are written are pretty simple. We may not need a spider to do that.
+
+- For the electric motor variable, maybe it denotes the presence of an electric motor, or several of them, thus we could turn this info in a variable that counts the number of instances of it in the jsonl
+
+- Important : understand what happens when several variables have the same name in a car page.
+
+- After crawling and grouping columns, we obtain a data set of shape (24166,209)
+
+- A good idea : after crawling with the 2 methods, check that you get all the cars from the advanced search method (and more) with the catalog method
+
+Maybe we can just call them "search method" and "catalog method" for the presentation/report
+
+I think the structure of the catalog is Brand >> Model >> Generation >> Modification
+
+
+I found some modifications that somehow have different images
+
+Technically what probably happened is that one has a more recent update than the other, with more images
+
+Maybe what we could do is, for all modifications, append images to the folder of the generation, only if they are not there already
+
+
+some cars have only images, no data (no modifications)
+https://www.auto-data.net/en/aston-martin-valkyrie-model-2633
+
+We are not crawling their images, but I think it's fine, because we have no info about them
+
+The data set will be more qualitative if all cars have images and infos
+
+After some thinking I think it's better to not care about different images for different modifications
+
+since it is just an anomaly on the website
+
+And it will be confusing for the user of the dataset if only 1% of modifications of the same generation have different images, so it is better to associate images to generations
+
+Try to estimate the time the search method + images will takes
+
+Need to count the number of generations
+
+It should be (n_cars + n_generations*10)*download_delay
+
+assuming 10 images per generation
+
+there is 6078 generations and 24116 cars so it should be ((6078*10) + 24116)*3 = 254688 seconds = 70.7 hours
+
+And that's only with the cars on the catalog method
+
+And I need to also get the links for the 333 brands, 2389 models and 6078 generations, that is (333 + 2389 + 6078)*3/3600 = 7.3 hours
+
+!important ! I need to check that the images paths are present in all cars, even when the folder already exists
+
+with the catalog method, there is 335 brands, 3361 models and 9650 generations 
+
+there is so much cars. it's at least two times the amount of the search method. I have 52718 car links
+
+with a 3 seconds delay, assuming there is 7 images per generation on average, we would need 3 * (52718 + 7*9650)/3600 = 100.2 hours
+
+I think I will use a 1 second delay. then it will be 33 hours
+
+Maybe they can time us out. But 1 second is still considered reasonable. it's like the minimum
+
+the thumb is not written with underscore in this page 
+https://www.auto-data.net/images/f0/thumb7397896.jpg 
+
+as a result it is crawled as a tiny image
+
+is this what you told me about earlier ?
+
+somehow it stopped. Strange.
+
+I'm trying by removing this 
+
+{"modif": "1.4 CRDi (90 Hp)", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-crdi-90hp-23618"}
+{"modif": "1.4 (100 Hp) Automatic", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-100hp-automatic-23641"}
+{"modif": "1.4 (100 Hp)", "link": "https://www.auto-data.net/en/hyundai-i20-ii-gb-1.4-100hp-23631"}
+
+It was not the issue, I solved it by specifying the encoding as utf 8 for opening json files in the cars spider. Strange that this only happens after scraping 20 000 cars.
+
+I had to stop at toyota --> delete cars /images and restart maybe
+
+Done with the crawling.
+
+Things to do
+
+--> evaluate if search C catalog
+
+--> data transformation
+    - remove useless columns (too much missing values)
+
+--> data exploration
+    - questions handling with the q_ method
+    some columns like "Electric motor 1,2,3,4" are actually headings without values in the html. It's not clear what they represent so we remove them.
+    - for Fuel consumption (economy) - combined (CNG) : remove the 
+
+
+We have 55 columns about types of fuel consumption. That's a lot.
+
+A lot of columns have missing values. But that doesn't mean that they are useless. They are just very specific (ex : acceleration from 0 to 60 kmh with diesel), Fuel consumption (economy) - urban (Ethanol - E85) (NEDC)...
+
+Here, we have columns with lots of "missing" data, but it's not actually missing, it's just very specific. And the columns are very connected together. Thus, for ML, it might be possible to input them easily, thus we do not remove them.
+For instance, it should be relatively easy to impute the acceleration from 0 to 100 given acceleration from 0 to 60 and 0 to 100.
+
+Or it can be relatively easy to just build a "energy consumption" score, or an "acceleration score".
+
+let's determine all the "units" columns, that is column that can be transformed into one number relevant columns
+
+I removed the "Engine oil specification" column, where all values are "log in to see."
+
+check for the formating of dates
+
+power is more interesting with rpm but not all values have rpm so it's better to remove it. Ideally, one could do some imputation to retrieve it and maybe make another column out of it.
+
+Let's build extra column for some cases when there are two infos in a cell. Ex: power and torque
+
+ Acceleration 0 - 62 mph may be a dupplicate of 0 - 100 mph
+
+ average values when several values of the same unit --> separated by either - or ; (may be risky if we still have ratios)
+
+An important number of columns contain ranges instead of numers.
+
+ there are "<" signs in acceleration 0 - 300 km/h. How do we handle these ?
+
+
+(venv) PS D:\iasd\data acquisition\allcars3\allcars3> python .\visualize_data_base.py
+Table: cars_data
++----------------------+----------------+-----------+
+| Column Name          | Data Type      | Nullable  |
++----------------------+----------------+-----------+
+| Modification         | TEXT           | YES       |
+| q_body_type          | TEXT           | YES       |
+
+...
+
+| Fuel consumption (economy) - combined (CNG) (NEDC, WLTP equivalent) | REAL           | YES       |
+| q_power_torque       | REAL           | YES       |
+| unique_gen           | TEXT           | YES       |
++----------------------+----------------+-----------+
+
+Table: unique_gen_images
++----------------------+----------------+-----------+
+| Column Name          | Data Type      | Nullable  |
++----------------------+----------------+-----------+
+| unique_gen           | TEXT           | YES       |
+| image                | BLOB           | YES       |
++----------------------+----------------+-----------+
+
+Image saved as 'retrieved_image.jpg'

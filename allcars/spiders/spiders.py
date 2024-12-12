@@ -1,5 +1,6 @@
 import json
 import scrapy
+import os
 
 #### 1 - Search Method
 
@@ -167,13 +168,13 @@ class ModifLinksSpider(scrapy.Spider):
 class CarsSpider2(scrapy.Spider):
     name = "cars2"
     custom_settings = {
-        'DOWNLOAD_DELAY': 3,  # Wait 3 seconds between requests to avoid overloading the server
+        'DOWNLOAD_DELAY': 1,  # Wait 1 seconds between requests to avoid overloading the server
     }
 
     def start_requests(self):
         # Load URLs from the JSONL file
         cars_links_path = "data/catalog_method/modification_links.jsonl"
-        with open(cars_links_path, "r") as f:
+        with open(cars_links_path, "r", encoding='utf-8') as f:
             for line in f:
                 data = json.loads(line)
                 url = data.get("link")
@@ -199,5 +200,51 @@ class CarsSpider2(scrapy.Spider):
             # Add header-value pair to the dictionary if header exists
             if header:
                 car_data[header.strip()] = value.strip() if value else None
+
+        # Extract the car model name from the URL
+        subdir_name = car_data['Brand'] + '/' + car_data['Model'] + '/' + car_data['Generation']
+        images_path = 'data/catalog_method/images/' + subdir_name
+
+        # Check if the folder images_path doesn't exist already
+        if not os.path.exists(images_path):
+
+            big_images = response.xpath('//*[contains(text(), \"bigs\")]').get()
+            prov = big_images.split(';')
+            prov = [it for it in prov if 'bigs' in it]
+            prov = prov[1:] # in the first element there is the inizialization
+
+            lst = []
+            for s in prov:
+                t = s.split('"')
+                lst.append('/images/' + t[1])
+
+            if lst:
+                # list of cars images
+                car_images = lst
+
+                car_data['images_path'] = images_path
+
+                for num,img_url in enumerate(car_images):
+
+                    full_url = response.urljoin(img_url)
+                    
+                    yield scrapy.Request(
+                            url=full_url,
+                            callback=self.save_image,
+                            cb_kwargs={'dir_name': subdir_name + '/'  + str(num)}  # Pass directory path
+                        )
+            else:
+                car_data['image_path'] = None
         
         yield car_data
+
+    def save_image(self, response, dir_name):
+        # Extract image name from URL
+        file_name = response.url.split('/')[-2:]
+        ext = file_name[-1].split('.')[1]
+        # Save the file to a temporary folder
+        save_path = f'data/catalog_method/images/{dir_name}' + '.' + ext
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        with open(save_path, 'wb') as f:
+            f.write(response.body)
