@@ -4,3 +4,4 @@
 - For the data transformation, look at scripts/data transformation & cleaning
 - For the data storage part, look at scripts/data storage
 - For some data exploration, look at data_exploration.ipynb
+- For a detailed summary of the process, look at journal.pdf
