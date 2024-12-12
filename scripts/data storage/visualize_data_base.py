@@ -31,31 +31,25 @@ for table in tables:
     print()
 
 # Retrieve one image (BLOB data) from the "unique_gen_images" table
-cursor.execute("SELECT images FROM unique_gen_images LIMIT 1")  # Adjust the query as needed
+cursor.execute("SELECT image FROM unique_gen_images LIMIT 1")
 image_data = cursor.fetchone()
 
-# Save and display the first image in the list if it exists
+# Save and display the image if it exists
 if image_data and image_data[0]:
     try:
-        # Deserialize the list of images
-        image_list = pickle.loads(image_data[0])
+        # Treat the blob as raw image bytes
+        image_bytes = image_data[0]
+        image = Image.open(io.BytesIO(image_bytes))
 
-        # Ensure the data is a list and get the first image
-        if isinstance(image_list, list) and image_list:
-            image_bytes = image_list[0]  # Get the first image
-            image = Image.open(io.BytesIO(image_bytes))
-
-            # Convert to JPG format
-            image = image.convert("RGB")
-            
-            # Save the image locally as a JPG file
-            image.save("retrieved_image.jpg", format="JPEG")
-            print("Image saved as 'retrieved_image.jpg'")
-            
-            # Display the image
-            image.show()
-        else:
-            print("The data is not a valid list or the list is empty.")
+        # Convert to JPG format if needed
+        image = image.convert("RGB")
+        
+        # Save the image locally as a JPG file
+        image.save("retrieved_image.jpg", format="JPEG")
+        print("Image saved as 'retrieved_image.jpg'")
+        
+        # Display the image
+        image.show()
     except Exception as e:
         print(f"Error reading image: {e}")
 else:

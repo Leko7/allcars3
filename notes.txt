@@ -135,3 +135,29 @@ Let's build extra column for some cases when there are two infos in a cell. Ex: 
 An important number of columns contain ranges instead of numers.
 
  there are "<" signs in acceleration 0 - 300 km/h. How do we handle these ?
+
+
+(venv) PS D:\iasd\data acquisition\allcars3\allcars3> python .\visualize_data_base.py
+Table: cars_data
++----------------------+----------------+-----------+
+| Column Name          | Data Type      | Nullable  |
++----------------------+----------------+-----------+
+| Modification         | TEXT           | YES       |
+| q_body_type          | TEXT           | YES       |
+
+...
+
+| Fuel consumption (economy) - combined (CNG) (NEDC, WLTP equivalent) | REAL           | YES       |
+| q_power_torque       | REAL           | YES       |
+| unique_gen           | TEXT           | YES       |
++----------------------+----------------+-----------+
+
+Table: unique_gen_images
++----------------------+----------------+-----------+
+| Column Name          | Data Type      | Nullable  |
++----------------------+----------------+-----------+
+| unique_gen           | TEXT           | YES       |
+| image                | BLOB           | YES       |
++----------------------+----------------+-----------+
+
+Image saved as 'retrieved_image.jpg'
