@@ -2,9 +2,11 @@
 
 For a detailed summary of the process, look at `journal.pdf`.
 
-For some quick data exploration, look at data_exploration.ipynb.
+For some quick data exploration, look at `data_exploration.ipynb`.
 
-To reproduce the full data set crawling/transformation/storage, run scripts in the following order :
+The slides or the presentation can be found in `slides.pdf`.
+
+To <mark>reproduce the full data set crawling/transformation/storage<mark>, run scripts in the following order :
 
 1 - Crawling :
   - links 
