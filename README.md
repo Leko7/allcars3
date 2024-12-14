@@ -17,7 +17,7 @@ To <mark>reproduce the full data set crawling/transformation/storage<mark>, run 
   - cars data
     - `catalog_5_add_multiple_cars.py`
 2 - Transformations & cleaning :
-    - `transformations.py`
+  - `transformations.py`
 3 - Storage
   - Create the data base
     - `create_db.py`
