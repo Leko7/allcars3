@@ -6,7 +6,7 @@ For some quick data exploration, look at `data_exploration.ipynb`.
 
 The slides or the presentation can be found in `slides.pdf`.
 
-To <mark>reproduce the full data set crawling/transformation/storage<mark>, run scripts in the following order :
+To <b>reproduce the full data set crawling/transformation/storage</b>, run scripts in the following order :
 
 - I. Crawling :
   - links 
