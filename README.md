@@ -3,7 +3,7 @@
 For this course project, we built a cars dataset by crawling data from <href>auto-data.net</href> 
 and we applied multiple transformations in order to build a version suitable for machine learning.
 
-For a detailed summary of the process, look at `journal.pdf`.
+For a very detailed summary of the process, look at `journal.pdf`.
 
 For some quick data exploration, look at `data_exploration.ipynb`.
 
