@@ -1,5 +1,7 @@
 # CARS Engineering -- Data Acquisition Project for the IASD Master 2
 
+For this course project, we built a cars dataset by crawling data from <href>auto-data.net</href>.
+
 For a detailed summary of the process, look at `journal.pdf`.
 
 For some quick data exploration, look at `data_exploration.ipynb`.
@@ -7,7 +9,7 @@ For some quick data exploration, look at `data_exploration.ipynb`.
 The slides or the presentation can be found in `slides.pdf`.
 
 To <b>reproduce the full data set crawling/transformation/storage</b>, run scripts in the following order. 
-Please note that with the current crawling delays (3 sec for links and 1 sec for car data), the crawling would take 5 days.
+Please note that with the current crawling delays (3 sec for links and 1 sec for car data), the crawling would take 5 full days.
 
 - I. Crawling :
   - links 
