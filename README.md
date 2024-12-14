@@ -1,6 +1,6 @@
 # CARS Engineering -- Data Acquisition Project for the IASD Master 2
 
-For a detailed summary of the process, look at ‵journal.pdf‵
+For a detailed summary of the process, look at `journal.pdf`
 
 To reproduce the full data set crawling/transformation/storage, run scripts in the following order :
 
