@@ -8,7 +8,7 @@ The slides or the presentation can be found in `slides.pdf`.
 
 To <mark>reproduce the full data set crawling/transformation/storage<mark>, run scripts in the following order :
 
-1 - Crawling :
+- 1. Crawling :
   - links 
     - `catalog_1_get_brand_links.py`
     - `catalog_2_get_model_links.py`
@@ -16,9 +16,9 @@ To <mark>reproduce the full data set crawling/transformation/storage<mark>, run 
     - `catalog_4_get_modification_links.py`
   - cars data
     - `catalog_5_add_multiple_cars.py`
-2 - Transformations & cleaning :
+- 2. Transformations & cleaning :
   - `transformations.py`
-3 - Storage
+- 3. Storage
   - Create the data base
     - `create_db.py`
   - Visualize the data base/check data & images
