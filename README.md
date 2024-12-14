@@ -6,7 +6,8 @@ For some quick data exploration, look at `data_exploration.ipynb`.
 
 The slides or the presentation can be found in `slides.pdf`.
 
-To <b>reproduce the full data set crawling/transformation/storage</b>, run scripts in the following order :
+To <b>reproduce the full data set crawling/transformation/storage</b>, run scripts in the following order. 
+Please note that with the current crawling delays (3 sec for links and 1 sec for car data), the crawling would take 5 days.
 
 - I. Crawling :
   - links 
