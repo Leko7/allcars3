@@ -11,7 +11,7 @@ The slides or the presentation can be found in `slides.pdf`.
 To <b>reproduce the full data set crawling/transformation/storage</b>, run scripts in the following order. 
 Please note that with the current crawling delays (3 sec for links and 1 sec for car data), the crawling would take 5 full days.
 
-- I. Crawling :
+- I. Crawling (Scrapy spiders can be found at `allcars/spiders/spiders.py`):
   - links 
     - `catalog_1_get_brand_links.py`
     - `catalog_2_get_model_links.py`
